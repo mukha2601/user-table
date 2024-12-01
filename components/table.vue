@@ -1,125 +1,148 @@
-<script setup lang="ts">
-const columns = [
-  {
-    key: "id",
-    label: "ID",
-  },
-  {
-    key: "name",
-    label: "Name",
-  },
-  {
-    key: "title",
-    label: "Title",
-  },
-  {
-    key: "email",
-    label: "Email",
-  },
-  {
-    key: "role",
-    label: "Role",
-  },
-];
-
-const people = [
-  {
-    id: 1,
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
-    role: "Member",
-  },
-  {
-    id: 2,
-    name: "Courtney Henry",
-    title: "Designer",
-    email: "courtney.henry@example.com",
-    role: "Admin",
-  },
-  {
-    id: 3,
-    name: "Tom Cook",
-    title: "Director of Product",
-    email: "tom.cook@example.com",
-    role: "Member",
-  },
-  {
-    id: 4,
-    name: "Whitney Francis",
-    title: "Copywriter",
-    email: "whitney.francis@example.com",
-    role: "Admin",
-  },
-  {
-    id: 5,
-    name: "Leonard Krasner",
-    title: "Senior Designer",
-    email: "leonard.krasner@example.com",
-    role: "Owner",
-  },
-  {
-    id: 6,
-    name: "Floyd Miles",
-    title: "Principal Designer",
-    email: "floyd.miles@example.com",
-    role: "Member",
-  },
-  {
-    id: 7,
-    name: "Leonard Krasner",
-    title: "Senior Designer",
-    email: "leonard.krasner@example.com",
-    role: "Owner",
-  },
-];
-
-const q = ref("");
-
-const filteredRows = computed(() => {
-  if (!q.value) {
-    return people;
-  }
-
-  return people.filter((person) => {
-    return Object.values(person).some((value) => {
-      return String(value).toLowerCase().includes(q.value.toLowerCase());
-    });
-  });
-});
-
-const page = ref(1);
-const pageCount = 5;
-
-// const rows = computed(() => {
-//   return people.slice((page.value - 1) * pageCount, page.value * pageCount);
-// });
-
-const rows = computed(() => {
-  const start = (page.value - 1) * pageCount;
-  const end = page.value * pageCount;
-  return filteredRows.value.slice(start, end);
-});
-</script>
-
 <template>
-  <div>
-    <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
-      <UInput v-model="q" placeholder="Filter people..." />
+  <div class="p-4">
+    <!-- Foydalanuvchi ismi bo‘yicha filtr -->
+    <div class="mb-4">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Search by name..."
+        class="border px-4 py-2 rounded w-full"
+      />
     </div>
 
-    <div>
-      <UTable :rows="rows" :columns="columns" />
+    <!-- Jadval -->
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+          >
+            ID
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+          >
+            Name
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+          >
+            Email
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+          >
+            Phone
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+          >
+            Website
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+          >
+            Company
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+          >
+            Address
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr v-for="user in paginatedUsers" :key="user?.id">
+          <td class="px-6 py-4 text-sm text-gray-500">{{ user?.id }}</td>
+          <td class="px-6 py-4 text-sm text-gray-900">{{ user?.name }}</td>
+          <td class="px-6 py-4 text-sm text-gray-500">{{ user?.email }}</td>
+          <td class="px-6 py-4 text-sm text-gray-500">{{ user?.phone }}</td>
+          <td class="px-6 py-4 text-sm text-blue-500">
+            <a :href="`http://${user?.website}`" target="_blank">{{
+              user?.website
+            }}</a>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-500">
+            {{ user?.company.name }}
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-500">
+            {{ user?.address.street }}, {{ user?.address.suite }},
+            {{ user?.address.city }}, {{ user?.address.zipcode }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-      <div
-        class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700"
+    <!-- Sahifalash -->
+    <div class="flex justify-center mt-4">
+      <button
+        @click="prevPage"
+        :disabled="currentPage === 1"
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-l"
       >
-        <UPagination
-          v-model="page"
-          :page-count="pageCount"
-          :total="people.length"
-        />
-      </div>
+        Previous
+      </button>
+      <span class="px-4 py-2 bg-gray-100 text-gray-700">
+        Page {{ currentPage }} of {{ totalPages }}
+      </span>
+      <button
+        @click="nextPage"
+        :disabled="currentPage === totalPages"
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-r"
+      >
+        Next
+      </button>
     </div>
   </div>
 </template>
+
+<script setup>
+defineProps({
+  users: {
+    type: Array,
+    required: true,
+  },
+});
+
+// Foydalanuvchi ismi bo‘yicha qidiruv
+const searchQuery = ref("");
+
+// Joriy sahifa va sahifalash uchun parametrlar
+const currentPage = ref(1);
+const itemsPerPage = 5;
+
+// Filtrlangan foydalanuvchilar ro‘yxati
+const filteredUsers = computed(() => {
+  if (!searchQuery.value) {
+    return users;
+  }
+  return users.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+// Umumiy sahifalar soni
+const totalPages = computed(() =>
+  Math.ceil(filteredUsers.value.length / itemsPerPage)
+);
+
+// Sahifalangan foydalanuvchilar
+const paginatedUsers = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredUsers.value.slice(start, end);
+});
+
+// Sahifani o‘zgartirish funksiyalari
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+};
+</script>
