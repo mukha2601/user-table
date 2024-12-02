@@ -11,7 +11,7 @@
     </div>
 
     <!-- Jadval -->
-    <table class="min-w-full divide-y divide-gray-200">
+    <table class="w-full divide-y divide-gray-200 overflow-auto">
       <thead class="bg-gray-50">
         <tr>
           <th
@@ -52,7 +52,12 @@
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        <tr v-for="user in paginatedUsers" :key="user?.id">
+        <tr
+          v-for="user in paginatedUsers"
+          :key="user?.id"
+          class="hover:bg-gray-300 cursor-pointer"
+          @click="store.openModal(user)"
+        >
           <td class="px-6 py-4 text-sm text-gray-500">{{ user?.id }}</td>
           <td class="px-6 py-4 text-sm text-gray-900">{{ user?.name }}</td>
           <td class="px-6 py-4 text-sm text-gray-500">{{ user?.email }}</td>
@@ -97,11 +102,23 @@
 </template>
 
 <script setup>
-defineProps({
-  users: {
-    type: Array,
-    required: true,
-  },
+import { getUsers } from "@/services/userService";
+import { useStore } from "~/store/index";
+const store = useStore();
+
+const users = ref([]);
+const isLoading = ref(true);
+const error = ref(null);
+
+onMounted(async () => {
+  try {
+    users.value = await getUsers();
+    console.log(users.value);
+  } catch (err) {
+    error.value = "Foydalanuvchilarni yuklashda xatolik yuz berdi";
+  } finally {
+    isLoading.value = false;
+  }
 });
 
 // Foydalanuvchi ismi bo‘yicha qidiruv
@@ -114,9 +131,9 @@ const itemsPerPage = 5;
 // Filtrlangan foydalanuvchilar ro‘yxati
 const filteredUsers = computed(() => {
   if (!searchQuery.value) {
-    return users;
+    return users.value;
   }
-  return users.filter((user) =>
+  return users.value.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
