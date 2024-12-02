@@ -1,10 +1,9 @@
 <template>
-  <div class="w-full h-screen flex justify-center items-center">
+  <div class="w-full h-screen  items-center">
     <div v-if="isLoading">Loading...</div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else>
-      <Modal />
-      <Table :users="users" />
+      <Table />
     </div>
   </div>
 </template>

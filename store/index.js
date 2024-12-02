@@ -10,8 +10,8 @@ export const useStore = defineStore("store", {
 
   actions: {
     openModal(data) {
-      this.isOpen = true;
       this.selectedItem = data;
+      this.isOpen = true;
     },
     closeModal() {
       this.isOpen = false;
